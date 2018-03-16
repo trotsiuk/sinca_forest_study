@@ -79,6 +79,22 @@ keepRelease <- function(year, type, n = 20){
 
 
 # 1 Analysis --------------------------------------------------------------
+#--- For teh trees that have NA in the missing_years/missing_mm calculate
+# the missing distance and age based on the radial growth and current dbh
+ring.df %>%
+  arrange(year) %>%
+  group_by(tree_id) %>%
+  summarise(dbh_ring = sum(incr_mm)*2,
+            incr_average = mean(incr_mm[1:5])) %>%
+  inner_join(core.df %>% filter(is.na(missing_years)), by = 'tree_id') %>%
+  left_join(tree.df %>% select(tree_id, dbh_mm), by = 'tree_id') %>%
+  mutate(missing_mm = (dbh_mm - dbh_ring) / 2,
+         missing_mm = pmax(0, missing_mm),
+         missing_years = round(missing_mm / incr_average, 0)) %>%
+  select(tree_id, missing_years, missing_mm) %>%
+  bind_rows(core.df %>% filter(!is.na(missing_years))) ->
+  core.df
+
 
 #---- Calculate the tree growth
 inner_join(ring.df, core.df, by = 'tree_id') %>%
@@ -100,6 +116,7 @@ inner_join(ring.df, core.df, by = 'tree_id') %>%
 #---- calcualte the absolute increase per species
 aith <- growth.df %>% group_by(species) %>% summarise(ai.threshold = 1.25 * sd(ai, na.rm = T)) %>% deframe()
 gapth <- c('Abies alba' = 1.16, 'Fagus sylvatica' = 1.16)
+dbhth <- c('Abies alba' = 320, 'Fagus sylvatica' = 280)
 
 #---- calculate the growth releases
 
@@ -109,13 +126,14 @@ growth.df %>%
   mutate(event = ifelse(row_number() %in%  peakDetection(x = ai, threshold = aith[first(species)], nups = 1,  mindist = 30), 'release', NA),
          event = ifelse(lead(fg, 7) <= pg, NA, event),
          event = ifelse(lag(pg, 7) >= fg, NA, event)) %>%
+  filter(dbh_mm <= dbhth[first(species)]) %>%
   filter(!is.na(event)) %>%
   select(tree_id, year, event) ->
   release.event
 
 #---- calculate the gap origin
 growth.df %>% 
-  filter(age %in% c(5:15)) %>%
+  filter(age %in% c(0:15)) %>%
   arrange(year) %>%
   group_by(tree_id) %>%
   summarise(species = first(species),
@@ -151,7 +169,27 @@ bind_rows(release.event, gap.event, no.event) %>%
   event.df
 
 
-
 # 2 Visualise the results -------------------------------------------------
+event.df %>%
+  filter(year >= 1700) %>%
+  mutate(plot_id = substr(tree_id, 0, 1)) %>%
+  ggplot(aes(year, fill = event)) +
+  geom_histogram(binwidth = 5) +
+  facet_wrap(~plot_id) +
+  theme_bw()
 
+growth.df %>%
+  mutate(year = year - age + 1,
+         plot_id = substr(tree_id, 0, 1)) %>%
+  group_by(plot_id, tree_id, species) %>%
+  summarise(year = min(year, na.rm = T)) %>%
+  filter(year >= 1700) %>%
+  ggplot(aes(year, fill = species)) +
+  geom_histogram(binwidth = 5) +
+  facet_wrap(~plot_id) +
+  theme_bw()
+
+# 9. Save the results -----------------------------------------------------
+write_csv(growth.df, 'data/growth.csv')
+write_csv(event.df, 'data/event.csv')
 
