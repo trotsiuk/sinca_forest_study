@@ -170,24 +170,34 @@ bind_rows(release.event, gap.event, no.event) %>%
 
 
 # 2 Visualise the results -------------------------------------------------
+quartz(width = 6.4, height = 4)
 event.df %>%
+  ungroup() %>%
   filter(year >= 1700) %>%
   mutate(plot_id = substr(tree_id, 0, 1)) %>%
   ggplot(aes(year, fill = event)) +
   geom_histogram(binwidth = 5) +
   facet_wrap(~plot_id) +
-  theme_bw()
+  theme_bw(base_size = 5)+
+  scale_fill_brewer('Event type', palette = 'Set2') +
+  xlab('Calendar year') + ylab('Number of trees') +
+  theme(legend.justification = c(1,0))
 
+quartz(width = 6.4, height = 4)
 growth.df %>%
   mutate(year = year - age + 1,
          plot_id = substr(tree_id, 0, 1)) %>%
   group_by(plot_id, tree_id, species) %>%
   summarise(year = min(year, na.rm = T)) %>%
+  ungroup() %>%
   filter(year >= 1700) %>%
   ggplot(aes(year, fill = species)) +
   geom_histogram(binwidth = 5) +
   facet_wrap(~plot_id) +
-  theme_bw()
+  theme_bw(base_size = 5) +
+  scale_fill_brewer('Species', palette = 'Set2') +
+  xlab('Calendar year') + ylab('Number of trees') +
+  theme(legend.justification = c(1,0))
 
 # 9. Save the results -----------------------------------------------------
 write_csv(growth.df, 'data/growth.csv')
