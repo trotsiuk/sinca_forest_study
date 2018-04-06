@@ -10,7 +10,6 @@ growth.df <- read_csv('data/growth.csv')
 event.df <- read_csv('data/event.csv')
 core.df <- readxl::read_excel('data/sinca_data.xlsx', sheet = 'core') %>% mutate_at(vars(missing_years, missing_mm), funs(as.numeric))
 tree.df <- readxl::read_excel('data/sinca_data.xlsx', sheet = 'tree')
-cluster.df <- read_csv("data/clusters.csv")
 
 # 0 Support Functions -----------------------------------------------------
 base_size <- 5
@@ -46,41 +45,35 @@ growth.df %>%
   summarise(year = min(year)) %>%
   inner_join(tree.use, by = 'tree_id') %>%
   mutate(plot_id = substr(tree_id, 0, 1)) %>%
-  inner_join(cluster.df %>% select(plot_id, plot_cluster), by = 'plot_id') %>%
-  group_by(plot_cluster, year) %>%
+  group_by(year) %>%
   count() %>%
   ungroup() %>%
-  complete(year = c(1650:2000), nesting(plot_cluster), fill = list(n = 0)) %>%
-  group_by(plot_cluster) %>%
+  complete(year = c(1650:2000), fill = list(n = 0)) %>%
   mutate(n_per = cumsum(n) * 100 / sum(n)) %>%
-  ungroup() %>%
-  mutate(plot_cluster = factor(plot_cluster, levels = c('Synchronized', 'Prolonged'))) ->
+  ungroup()  ->
   sample.depth.df
   
 # proportion of events
 event.df %>%
   inner_join(tree.use, by = 'tree_id') %>%
   mutate(plot_id = substr(tree_id, 0, 1)) %>%
-  inner_join(cluster.df %>% select(plot_id, plot_cluster), by = 'plot_id') %>%
-  group_by(plot_cluster, event, year) %>%
+  group_by(event, year) %>%
   count() %>%
   ungroup() %>%
-  complete(year = c(1650:2000), nesting(plot_cluster, event), fill = list(n = 0)) %>%
-  inner_join(sample.depth.df %>% select(plot_cluster, year, n_per), by = c('plot_cluster', 'year')) %>%
+  complete(year = c(1650:2000), nesting(event), fill = list(n = 0)) %>%
+  inner_join(sample.depth.df %>% select(year, n_per), by = c('year')) %>%
   filter(n_per >= 10) %>%
   mutate(rel_per = n * 100 / n_per)  %>%
-  ungroup() %>%
-  mutate(plot_cluster = factor(plot_cluster, levels = c('Synchronized', 'Prolonged'))) ->
+  ungroup() ->
   event.perc.df
   
 
 # 2. Visualize the histogram of event -------------------------------------
-quartz(width = 3.3, height = 5)
+quartz(width = 3.2, height = 2)
 event.perc.df %>%
   ggplot() +
   gstyle +
   geom_histogram(aes(year, weight = rel_per, fill = event), binwidth = 10, breaks = seq(1600, 2000, 10))+
-  facet_wrap( ~ plot_cluster, ncol = 1) +
   scale_x_continuous("Calendar year", limits = c(1650,2000)) +
   scale_y_continuous( limits = c(0, 60), sec.axis = sec_axis(~.*1.666667, name = 'Sampling depth (%)'))+
   ylab("% trees disturbed") +
