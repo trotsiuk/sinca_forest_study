@@ -37,6 +37,7 @@ gstyle <- list(
 age.df <- core.df %>%
   filter(missing_years <= 20,
     !is.na(missing_years)) %>%
+  #mutate(missing_years = ifelse(is.na(missing_years), 0, missing_years)) %>%
   inner_join(ring.df %>% group_by(tree_id) %>% summarise(year = min(year)), by = 'tree_id') %>%
   inner_join(tree.df %>% select(plot_id, tree_id, species), by = 'tree_id') %>%
   mutate(year = year - missing_years + 1)
