@@ -49,7 +49,8 @@ growth.df %>%
   count() %>%
   ungroup() %>%
   complete(year = c(1650:2000), fill = list(n = 0)) %>%
-  mutate(n_per = cumsum(n) * 100 / sum(n)) %>%
+  mutate(n_depth = cumsum(n),
+         n_per = n_depth * 100 / max(n_depth)) %>% 
   ungroup()  ->
   sample.depth.df
   
@@ -61,10 +62,11 @@ event.df %>%
   count() %>%
   ungroup() %>%
   complete(year = c(1650:2000), nesting(event), fill = list(n = 0)) %>%
-  inner_join(sample.depth.df %>% select(year, n_per), by = c('year')) %>%
+  inner_join(sample.depth.df %>% select(year, n_per, n_depth), by = c('year')) %>%
   filter(n_per >= 10) %>%
-  mutate(rel_per = n * 100 / n_per)  %>%
-  ungroup() ->
+  mutate(rel_per = n * 100 / n_depth)  %>%
+  ungroup() %>%
+  mutate(event = factor(event, levels = c('no event','release',  'gap')))->
   event.perc.df
   
 
@@ -75,7 +77,75 @@ event.perc.df %>%
   gstyle +
   geom_histogram(aes(year, weight = rel_per, fill = event), binwidth = 10, breaks = seq(1600, 2000, 10))+
   scale_x_continuous("Calendar year", limits = c(1650,2000)) +
-  scale_y_continuous( limits = c(0, 60), sec.axis = sec_axis(~.*1.666667, name = 'Sampling depth (%)'))+
+  scale_y_continuous( limits = c(0, 30), sec.axis = sec_axis(~.*3.333333, name = 'Sampling depth (%)'))+
   ylab("% trees disturbed") +
   scale_fill_manual('',values = c("gap" = "#7CAE00", "release" = "#da2c3a", "no event" = "#78c2ef")) +
-  geom_line(data = sample.depth.df, aes(year, n_per / 1.666667), color = "grey40", linetype = 2)
+  geom_line(data = sample.depth.df, aes(year, n_per / 3.333333), color = "grey40", linetype = 2)
+
+
+
+# 2. Boxplot of the trees with certain DBH --------------------------------
+
+quartz(width = 3, height = 2, pointsize = 12)
+
+growth.df %>%
+  filter(tree_id %in% pull(tree.use),
+    dbh_mm >=155, dbh_mm <= 165) %>%
+  ggplot()+
+  geom_boxplot(aes(species, age, fill = species)) +
+  gstyle +
+  scale_fill_manual('', values = c("Fagus sylvatica" = "#da2c3a", "Abies alba" = "#78c2ef"),
+    labels = c("Fagus sylvatica" = "European beech", "Abies alba" = "Silver fir"))+
+  xlab("Event nuber") +
+  theme(legend.position = "none") +
+  coord_cartesian(ylim = c(0, 300)) +
+  xlab('Species')+ylab('DBH (mm)')
+
+
+
+
+
+# DBH distribution of trees for tree ring analysis ------------------------
+quartz(width = 3, height = 2, pointsize = 12)
+
+growth.df %>%
+  group_by(tree_id) %>%
+  filter(tree_id %in% pull(tree.use),
+    dbh_mm == max(dbh_mm)) %>%
+  ungroup() %>%
+  ggplot()+
+  gstyle+
+  geom_histogram(aes(dbh_mm, fill = species), binwidth = 50, breaks = seq(0, 1100, 50))+
+  scale_x_continuous("DBH (mm)", limits = c(0,1000), breaks = seq(0, 1200, 200)) +
+  coord_cartesian( ylim = c(0,100))+
+  ylab("Number of trees") +
+  scale_fill_manual('', values = c("Fagus sylvatica" = "#da2c3a",
+    "Abies alba" = "#78c2ef"),
+    labels = c("Fagus sylvatica" = "European beech",
+      "Abies alba" = "Silver fir")) +
+  theme(legend.key.size =  unit(base_size*1, "mm"), legend.key.height =  unit(base_size*1, "mm"))+
+  theme(legend.text = element_text(size=base_size * 1.2),
+    legend.title = element_text(size=base_size * 1.5))+
+  theme(legend.key = element_rect(colour = 'white', fill = 'white', linetype='dashed', size =0.1)) +
+  theme(legend.justification=c(1,1), legend.position=c(0.95,0.95))
+  
+
+# density plot
+quartz(width = 3, height = 2, pointsize = 12)
+
+growth.df %>%
+  group_by(tree_id) %>%
+  filter(tree_id %in% pull(tree.use),
+    dbh_mm == max(dbh_mm)) %>%
+  ungroup() %>%
+  ggplot()+
+  gstyle +
+  geom_density(aes(dbh_mm, fill = species)) +
+  ylab("Density") + xlab('DBH (mm)') +
+  scale_fill_manual('', values = alpha(c("Fagus sylvatica" = "#da2c3a", "Abies alba" = "#78c2ef"), 0.5),
+    labels = c("Fagus sylvatica" = "European beech", "Abies alba" = "Silver fir")) +
+  theme(legend.key.size =  unit(base_size*1, "mm"), legend.key.height =  unit(base_size*1, "mm"))+
+  theme(legend.text = element_text(size=base_size * 1.2),
+    legend.title = element_text(size=base_size * 1.5))+
+  theme(legend.key = element_rect(colour = 'white', fill = 'white', linetype='dashed', size =0.1)) +
+  theme(legend.justification=c(1,1), legend.position=c(0.95,0.95))
