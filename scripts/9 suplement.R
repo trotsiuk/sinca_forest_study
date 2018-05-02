@@ -14,6 +14,8 @@ tree.df <- readxl::read_excel('data/sinca_data.xlsx', sheet = 'tree')
 # 0 Support Functions -----------------------------------------------------
 source('scripts/0_functions.R')
 
+tree.use <- core.df %>% filter(!is.na(missing_years), missing_years <= 20) %>% distinct(plot_id, tree_id)
+
 # 2. Boxplot of the trees with certain DBH --------------------------------
 
 quartz(width = 3.2, height = 2, pointsize = 12)

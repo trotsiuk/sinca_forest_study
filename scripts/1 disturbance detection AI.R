@@ -36,7 +36,7 @@ ring.df %>%
   left_join(tree.df %>% select(plot_id, tree_id, dbh_mm), by = c('plot_id','tree_id')) %>%
   mutate(missing_mm = (dbh_mm - dbh_ring) / 2,
     missing_mm = pmax(0, missing_mm),
-    missing_years = round(missing_mm / incr_average, 0)) %>%
+    missing_years = round(missing_mm / incr_average, 0)) %>% 
   select(plot_id, tree_id, missing_years, missing_mm) %>%
   bind_rows(core.df %>% filter(!is.na(missing_years))) ->
   core.df

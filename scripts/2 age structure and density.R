@@ -61,7 +61,7 @@ growth.df %>%
 
 
 # 3. Visualization --------------------------------------------------------
-data.d <- age.df.pred
+data.d <- age.df.pred #age.df
 
 #' Histogram of the age
 quartz(width = 3.2, height = 2, pointsize = 12)
@@ -69,12 +69,13 @@ quartz(width = 3.2, height = 2, pointsize = 12)
 data.d %>%
   ggplot() +
   gstyle() +
-  geom_histogram(aes(year, fill = species, alpha = est), breaks = seq(1600, 2000, 10)) +
+  geom_histogram(aes(year, fill = species), breaks = seq(1600, 2000, 1)) +
+  #geom_histogram(aes(year, fill = species, alpha = est), breaks = seq(1600, 2000, 10)) +
   scale_x_continuous("Calendar year", limits = c(1600,2000), breaks = seq(1600, 2000, 100)) +
-  coord_cartesian( ylim = c(0,300))+
+  coord_cartesian( ylim = c(0,10))+ #300 # 60
   ylab("Number of trees") +
-  sinca_fill('') +
-  scale_alpha_discrete('', range = c(0.3, 1))
+  sinca_fill('') #+
+  #scale_alpha_discrete('', range = c(0.3, 1))
 
 
 #' Density of age

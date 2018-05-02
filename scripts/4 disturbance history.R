@@ -33,7 +33,7 @@ growth.df %>%
   
 # proportion of events
 event.df %>%
-  rename(event = event_bl) %>%
+  rename(event = event_ai) %>%
   filter(!is.na(event)) %>%
   inner_join(tree.use,  by = c('plot_id', 'tree_id')) %>%
   mutate(year = ifelse(event %in% 'gap', year - age, year)) %>%
@@ -45,8 +45,8 @@ event.df %>%
   filter(n_per >= 10) %>%
   mutate(rel_per = n * 100 / n_depth)  %>%
   ungroup() %>%
-  mutate(event = factor(event, levels = c('no event','moderate','major',  'gap')))->
-  #mutate(event = factor(event, levels = c('no event','release',  'gap')))->
+  #mutate(event = factor(event, levels = c('no event','moderate','major',  'gap')))->
+  mutate(event = factor(event, levels = c('no event','release',  'gap')))->
   event.perc.df
   
 

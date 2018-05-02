@@ -1,18 +1,21 @@
 variable,Abies alba,Fagus sylvatica
-gro_10_max_median,2.06,1.96
-gro_10_max_sd,0.96,0.68
-gro_10_min_median,0.29,0.21
-gro_10_min_sd,0.31,0.28
-gro_max_median,2.87,2.75
+gro_10_max_median,2.06,1.97
+gro_10_max_sd,0.98,0.67
+gro_10_min_median,0.29,0.22
+gro_10_min_sd,0.31,0.27
+gro_max_median,2.87,2.76
 gro_max_sd,1.32,0.97
-gro_meadian_median,0.89,0.7
-gro_meadian_sd,0.49,0.38
+gro_meadian_median,0.88,0.7
+gro_meadian_sd,0.5,0.38
 gro_min_median,0.14,0.05
 gro_min_sd,0.19,0.12
+plot_id_median,9,9
+plot_id_sd,5.75,5.66
 age_max,329,456
-age_median,143,192
-age_quantile,236,336
-age_sd,56.53,77.47
-gap,8.59,5.46
-no event,24.61,7.65
-release,66.8,86.89
+age_median,143,190.5
+age_quantile,235,329.9
+age_sd,56.53,77.14
+gap,34.93,23.61
+major,11.99,11.14
+moderate,51.71,63.93
+no event,1.37,1.33
