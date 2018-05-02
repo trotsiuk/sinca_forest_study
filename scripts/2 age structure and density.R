@@ -59,7 +59,7 @@ growth.df %>%
 
 
 
-
+write_csv(age.df.pred, 'data/age_pred.csv')
 # 3. Visualization --------------------------------------------------------
 data.d <- age.df.pred #age.df
 

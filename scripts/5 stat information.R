@@ -13,19 +13,19 @@ core.df <- readxl::read_excel('data/sinca_data.xlsx', sheet = 'core') %>% mutate
 
 
 # 1. Prepare the dataset --------------------------------------------------
-tree.use <- core.df %>% filter(!is.na(missing_years), missing_years <= 20) %>% distinct(tree_id) %>% pull
+tree.use <- core.df %>% filter(!is.na(missing_years), missing_years <= 20) %>% distinct(plot_id, tree_id)
 
 
 
 # 2. Table statistings on the tree growth and analysis --------------------
-growth.df <- growth.df %>% filter(tree_id %in% tree.use)
-event.df <- event.df  %>% filter(tree_id %in% tree.use)
+growth.df <- growth.df %>% inner_join(tree.use,  by = c('plot_id', 'tree_id'))
+event.df <- event.df  %>% inner_join(tree.use,  by = c('plot_id', 'tree_id'))
 
 
 
 # tree age
 growth.df %>%
-  group_by(species, tree_id) %>%
+  group_by(species, plot_id, tree_id) %>%
   summarise(age = max(age, na.rm = T)) %>%
   group_by(species) %>%
   select(-tree_id) %>%
@@ -37,7 +37,8 @@ growth.df %>%
     
 # dist history proportion
 event.df %>% 
-  group_by(species, event) %>%
+  group_by(species, event=event_bl) %>%
+  filter(!is.na(event)) %>%
   count() %>%
   group_by(species) %>%
   mutate(n = n * 100 / sum (n)) %>%
@@ -48,7 +49,7 @@ event.df %>%
 
 # tree growth and longevity
 growth.df %>%
-  group_by(species, tree_id) %>%
+  group_by(species, plot_id, tree_id) %>%
   mutate(incr_mean = rollapply(incr_mm, width = 10, FUN = mean, fill = NA)) %>%
   summarise(gro_meadian = median(incr_mm, na.rm = T),
     gro_10_max = max(incr_mean, na.rm = T),

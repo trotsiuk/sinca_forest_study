@@ -32,7 +32,7 @@ gstyle <- function(base_size = 5, base_family = "sans"){
 
 sinca_cols <- c( `Abies alba` = "#00b159",`Fagus sylvatica` = "#d11141",  `Carpinus betulus`= "#00aedb",
   `Acer pseudoplatanus`     = "#f37735",`yellow`     = "#ffc425",`light grey` = "#cccccc",`dark grey`  = "#8c8c8c",
-  `no event` = "#cccccc",`moderate` = "#f37735",`major` = "#d11141",  `gap` = "#00b159", `release` = "#d11141")
+  `gap` = "#00b159",`major` = "#d11141",`moderate` = "#f37735", `no event` = "#cccccc",  `release` = "#d11141")
 
 sinca_fill <- function(...){
   scale_fill_manual(values = sinca_cols, ...)
@@ -114,4 +114,19 @@ keepRelease <- function(year, type, n = 20){
     keep[diffyear < n & type %in% 'release'] <- 'no'
   }
   keep
+}
+
+mdsFun <- function(ca, k = 30, bw = 5, st = 7){
+  #' @description return a vector of the fited KDE function
+  #' @param ca arranged vector of the canopy area values
+  #' @param k a windows length, default 30
+  #' @param bw a smoothing bandwidth to be used, default = 5
+  #' @param st a standartization value, to scale back to canopy area
+  
+  rollapply( ca, 
+             width = k,
+             FUN = function(x){n <- length(x); density(1:n, weights = x, bw = bw, n = n)$y[round((n+1)/2)]* 100/st},
+             fill = 0,
+             align = "center",
+             partial = TRUE)
 }
