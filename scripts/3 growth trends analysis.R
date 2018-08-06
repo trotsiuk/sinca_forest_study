@@ -28,14 +28,24 @@ growth.df %>%
 
 # only gap recruit growth.sel.df <- growth.sel.df %>% inner_join(event.df %>% filter(event %in% 'gap') %>% distinct(tree_id), by = 'tree_id')
 
+# the median with standard error data
+growth.sel.df %>%
+  group_by(layer, species, age) %>%
+  summarise(dbh_mm_se = sd(dbh_mm)/sqrt(length(dbh_mm)),
+    dbh_mm = median(dbh_mm, na.rm = T)) ->
+  growth.mean.df
+
 #' Growth trends for the species
 growth.gg <- growth.sel.df %>%
-  ggplot(aes(age, dbh_mm, color = species, group = interaction(plot_id, tree_id))) +
-  geom_line(alpha = 0.1, size = rel(0.1)) +
-  geom_smooth(aes(group = species), se = T, alpha = 1, size = rel(0.1), fill = 'grey80') +
+  ggplot() +
+  geom_line(aes(age, dbh_mm, color = species, group = interaction(plot_id, tree_id)), alpha = 0.1, size = rel(0.1)) +
+  geom_ribbon(data = growth.mean.df, aes(x = age, y = dbh_mm, ymin=dbh_mm - dbh_mm_se, ymax=dbh_mm + dbh_mm_se, fill = species), alpha=0.2) +
+  geom_line(data = growth.mean.df, aes(age, dbh_mm, color = species)) +
+  #geom_smooth(aes(group = species), se = T, alpha = 1, size = rel(0.1), fill = 'grey80') +
   facet_wrap(~layer, ncol = 1) +
   gstyle() +
   sinca_color('')+
+  sinca_fill('')+
   xlab("Age (years)") + ylab("Cumulative DBH (mm)") +
   coord_cartesian(ylim = c(0, 700))
 

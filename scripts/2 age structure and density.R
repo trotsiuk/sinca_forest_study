@@ -49,7 +49,7 @@ growth.df %>%
     fit = lm(age ~ dbh_mm * species, data = .)
     #fit = nlme::lme(age ~ dbh_mm, ~1|plot_id/species, data=., method="ML", na.action = na.omit, correlation = nlme::corAR1())
   ) %>%
-  #broom::glance(fit)
+  broom::glance(fit)
   broom::augment(fit, newdata = tree.age) %>%
   select(plot_id, tree_id, species = sporig, age = `.fitted`) %>%
   mutate(year = 2012 - round(age, 0),

@@ -65,8 +65,8 @@ inner_join(ring.df, core.df, by = c('plot_id','tree_id')) %>%
 #' calcualte the absolute increase per species
 aith <- growth.df %>% group_by(species) %>% summarise(ai.threshold = 1.25 * sd(ai, na.rm = T)) %>% deframe()
 gapth <- c('Abies alba' = 1.16, 'Fagus sylvatica' = 1.16)
-#dbhth <- c('Abies alba' = 320, 'Fagus sylvatica' = 280)
-dbhth <- c('Abies alba' = 9999, 'Fagus sylvatica' = 9999)
+dbhth <- c('Abies alba' = 320, 'Fagus sylvatica' = 280)
+#dbhth <- c('Abies alba' = 9999, 'Fagus sylvatica' = 9999)
 blth <- c('Abies alba' = '2808.525 *exp( -8.9079 *pg)+ 881.7403 *exp( -1.0737 *pg)', 'Fagus sylvatica' = '3580.1915 *exp( -9.373 *pg)+ 715.8028 *exp( -1.2492 *pg)')
 
 

@@ -29,7 +29,7 @@ growth.df %>%
   geom_boxplot(aes(species, age, fill = species)) +
   gstyle() +
   sinca_fill('') +
-  xlab('') + ylab('DBH (mm)') +
+  xlab('') + ylab('Age at DBH = 160mm') +
   theme(legend.position = "none")
 
 
@@ -46,7 +46,7 @@ growth.df %>%
   gstyle() +
   sinca_color('') +
   coord_cartesian(ylim = c(0, 300)) +
-  xlab('Calendar year of recruitment') + ylab('Age at DBH = 160mm ')
+  xlab('Calendar year of recruitment') + ylab('Age at DBH = 160mm')
 
 
 
@@ -64,6 +64,6 @@ growth.df %>%
   gstyle()+
   sinca_fill('')+
   geom_histogram(aes(dbh_mm, fill = species), breaks = seq(0, 1100, 50))+
-  scale_x_continuous("DBH (mm)", limits = c(0,1000), breaks = seq(0, 1200, 200)) +
+  scale_x_continuous("Age at DBH = 160mm", limits = c(0,1000), breaks = seq(0, 1200, 200)) +
   coord_cartesian( ylim = c(0,100))+
   ylab("Number of trees") 
