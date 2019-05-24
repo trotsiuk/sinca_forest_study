@@ -49,12 +49,13 @@ growth.df %>%
     fit = lm(age ~ dbh_mm * species, data = .)
     #fit = nlme::lme(age ~ dbh_mm, ~1|plot_id/species, data=., method="ML", na.action = na.omit, correlation = nlme::corAR1())
   ) %>%
-  broom::glance(fit)
+  # broom::glance(fit)
   broom::augment(fit, newdata = tree.age) %>%
   select(plot_id, tree_id, species = sporig, age = `.fitted`) %>%
   mutate(year = 2012 - round(age, 0),
-         est = 'non reliable') %>%
-  bind_rows(age.df %>% mutate(est = 'reliable'))->
+         est = 'estimated age') %>%
+  bind_rows(age.df %>% mutate(est = 'counted age')) %>%
+  mutate(est = factor(est, levels = c('estimated age','counted age')))->
   age.df.pred
 
 
@@ -62,20 +63,25 @@ growth.df %>%
 write_csv(age.df.pred, 'data/age_pred.csv')
 # 3. Visualization --------------------------------------------------------
 data.d <- age.df.pred #age.df
+data.d <- age.df
 
 #' Histogram of the age
-quartz(width = 3.2, height = 2, pointsize = 12)
+quartz(width = 6.8, height = 2, pointsize = 12)
 
 data.d %>%
   ggplot() +
   gstyle() +
-  geom_histogram(aes(year, fill = species), breaks = seq(1600, 2000, 1)) +
-  #geom_histogram(aes(year, fill = species, alpha = est), breaks = seq(1600, 2000, 10)) +
+  geom_histogram(aes(year, fill = species, alpha = est), breaks = seq(1600, 2000, 10)) +
+  # geom_histogram(aes(year, fill = species), breaks = seq(1600, 2000, 1)) +
   scale_x_continuous("Calendar year", limits = c(1600,2000), breaks = seq(1600, 2000, 100)) +
-  coord_cartesian( ylim = c(0,10))+ #300 # 60
+  coord_cartesian( ylim = c(0,300))+ #300 # 60
+  # facet_wrap(~species, ncol = 2) +
   ylab("Number of trees") +
-  sinca_fill('') #+
-  #scale_alpha_discrete('', range = c(0.3, 1))
+  sinca_fill('') +
+  scale_alpha_discrete('', range = c(0.3, 1))
+
+ggsave( 'figs/fig 1 age non reliable 10 years.pdf', width = 3.2, height = 2, units = c("in"), dpi = 'retina', bg = "transparent")
+
 
 
 #' Density of age
